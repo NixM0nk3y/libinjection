@@ -2,19 +2,18 @@
 # either works
 
 # ubuntu
-#LUA_FLAGS=-I/usr/include/lua5.1 -llua5.1
-#LUA=/usr/bin/lua5.1
+LUA_FLAGS=-I/usr/include/lua5.1 -llua5.1
+LUA=/usr/bin/lua5.1
 
 # ubuntu luajit 2
-LUA_FLAGS=-I/usr/include/luajit-2.0 -lluajit-5.1
-LUA=luajit
+#LUA_FLAGS=-I/usr/include/luajit-2.0 -lluajit-5.1
+#LUA=luajit
 
 # centos and friends
 #LUA_FLAGS=-I/usr/include/ -L/usr/lib64 -llua
 #LUA=lua
 
-SHARED=-shared -Wl,-soname,libinjection.so
-CFLAGS= -O0 -g -Wall -Wextra -Wformat=2 -fPIC -fno-common
+CFLAGS=  -c -O0 -g -Wall -Wextra -Wformat=2 -fPIC -fno-common
 APPLE=$(shell uname -a | grep -c Darwin)
 
 # MAC OS X - brew install luajit
@@ -27,9 +26,10 @@ endif
 # need to hack a linux version here
 #
 # MAC OS X: note using ".so" suffix NOT ".dylib"
-libinjection.so: copy libinjection_wrap.c
+libinjection.a: copy libinjection_wrap.c
 	${CC} ${CFLAGS} -I. ${LUA_FLAGS} \
-	${SHARED} libinjection_wrap.c libinjection_sqli.c libinjection_html5.c libinjection_xss.c -o libinjection.so
+	libinjection_wrap.c libinjection_sqli.c libinjection_html5.c libinjection_xss.c
+	ar rcs libinjection.a libinjection_wrap.o libinjection_sqli.o libinjection_html5.o libinjection_xss.o
 
 # build and run unit tests
 # Uses a python helper to read the test files to generate
@@ -64,7 +64,7 @@ speed:
 	${LUA} luatest.lua
 clean:
 	@rm -f *~
-	@rm -rf *.dSYM *.so *.dylib
+	@rm -rf *.dSYM *.so *.dylib *.o *.a
 	@rm -f libinjection.h libinjection_sqli.c libinjection_sqli_data.h
 	@rm -f sqlifingerprints.lua
 	@rm -f unit-test.t
